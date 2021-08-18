@@ -7,12 +7,8 @@ persists(T,TNEXT,directContained(OB,OC)) :-
     closedContainer(OC).
 
 persists(T,TNEXT,directContained(OB,OC)) :-
-    notOccurs(T,TNEXT,dumpAnything),
-    notOccurs(T,TNEXT,unload(OB,OC)).
-
-persists(T,TNEXT,directContained(OB,OC)) :-
     containerWithLid(OC),
-    infer(holds(T,effective(OC))).
+    infer(holds(TNEXT,effective(OC))).
 
 persists(T,TNEXT,directContained(OB,OC)) :-
     occurs(T,TNEXT,load(_,_));
@@ -24,8 +20,8 @@ persists(T,TNEXT,directContained(OB,OC)) :-
     OX \= OB.
 
 persists(T,TNEXT,directContained(OB,OC)) :-
-    occurs(T,TNEXT,unseal(_,_,OZ)),
-    OZ \= OC. 
+    occurs(T,TNEXT,unseal(OW,_,_)),
+    OW \= OC. 
 
 % Note: OB.OC means directContained(OB,OC), OC..OX means contained(OC,OX), comma means two groups that don't have contain relationship
 % OC is an open container
@@ -45,19 +41,24 @@ persists(T,TNEXT,directContained(OB,OC)) :- % OC can be an open container or con
     containerWithLid(OC),
     infer(holds(T,effective(OC))).
 
+persists(T,TNEXT,directContained(OB,OC)) :-
+    notOccurs(T,TNEXT,dumpAnything),
+    notOccurs(T,TNEXT,unload(OB,OC)).
+
 
 % persists for contained 
 persists(T,TNEXT,contained(OB,OC)) :-
     closedContainer(OC).
 
 persists(T,TNEXT,contained(OB,OC)) :-
+    containerWithLid(OC),
+    infer(holds(T,effective(OC))),
+    notOccurs(T,TNEXT,unsealToAnything(OC)).
+
+persists(T,TNEXT,contained(OB,OC)) :-
     notOccurs(T,TNEXT,dumpAnything),
     notOccurs(T,TNEXT,unload(OX,_)), 
     checkNotContained(T,notContained(OB,OX)).
-
-persists(T,TNEXT,contained(OB,OC)) :-
-    containerWithLid(OC),
-    infer(holds(T,effective(OC))). 
 
 % NOTE: OB..OC means contained(OB,OC), OX.OC means directContained(OX,OC)
 % OB..OC..OX.OA: OX becomes outsideAt, but doesn't affect contained(OB,OC). contained(OB,OC) true 
@@ -74,8 +75,8 @@ persists(T,TNEXT,contained(OB,OC)) :-
     occurs(T,TNEXT,seal(_,_,_)).
 
 persists(T,TNEXT,contained(OB,OC)) :-
-    occurs(T,TNEXT,unseal(_,_,OZ)),
-    OZ \= OC. 
+    occurs(T,TNEXT,unseal(OW,_,_)),
+    OW \= OC. 
 
 % NOTE: OB..OC means contained(OB,OC), OX.OC means directContained(OX,OC), comma means they don't have contained relationship
 % OC is open container 
@@ -124,12 +125,12 @@ persists(T,TNEXT,effective(O)) :-
     OL \= O. 
 
 persists(T,TNEXT,effective(O)) :-
-    occurs(T,TNEXT,unseal(_,_,OW)),
+    occurs(T,TNEXT,unseal(OW,_,_)),
     OW \= O. 
 
 persists(T,TNEXT,effective(O)) :-
     notOccurs(T,TNEXT,sealWithAnything(O)),
-    notOccurs(T,TNEXT,unseal(_,_,O)).
+    notOccurs(T,TNEXT,unsealToAnything(O)).
 
 % persists for ineffective 
 persists(T,TNEXT,ineffective(O)) :-
@@ -143,12 +144,12 @@ persists(T,TNEXT,ineffective(O)) :-
     OW \= O. 
 
 persists(T,TNEXT,ineffective(O)) :-
-    occurs(T,TNEXT,unseal(OC,OL,_)),
+    occurs(T,TNEXT,unseal(OW,OL,OC)),
     OC \= O,
     OL \= O. 
 
 persists(T,TNEXT,ineffective(O)) :-
-    notOccurs(T,TNEXT,unsealFromAnything(O)),
+    notOccurs(T,TNEXT,unsealToAnything(O)),
     notOccurs(T,TNEXT,seal(_,_,O)).
 
 % persists for outsideAt
