@@ -22,19 +22,22 @@ notOccurs(TA,TB,carrySomewhere(_)) :-
 notOccurs(TA,TB,loadIntoSomething(_)) :- 
     notOccurs(TX,TY,load).
 
-checkNotContained(T,notContained(OB,OC)) :-
+holds(T,notContained(OB,OC)) :-
     OB \= OC,
-    holds(T,outsideAt(OB,_)).
+    infer(holds(T,outsideAt(OB,_))).
 
-checkNotContained(T,notContained(OB,OC)) :-
-    holds(T,directContained(OB,OM)), 
+holds(T,notContained(OB,OC)) :-
+    infer(holds(T,directContained(OB,OM))), 
     OM \= OC,
-    checkNotContained(T,notContained(OM,OC)).
+    infer(holds(T,notContained(OM,OC))).
 
-checkContained(T,contained(OA,OC)) :- 
-    holds(T,directContained(OA,OC)). 
+holds(T,contained(OA,OC)) :- 
+    infer(holds(T,directContained(OA,OC))). 
 
-checkContained(T,contained(OA,OC)) :-
-    holds(T,directContained(OB,OC)),
-    checkContained(T,contained(OA,OB)).
+holds(T,contained(OA,OC)) :-
+    infer(holds(T,directContained(OA,OB))),
+    infer(holds(T,contained(OB,OC))).
 
+holds(_,effective(O)) :- 
+    block(O);
+    closedContainer(O).

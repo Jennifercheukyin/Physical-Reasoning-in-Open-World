@@ -8,7 +8,8 @@ persists(T,TNEXT,directContained(OB,OC)) :-
 
 persists(T,TNEXT,directContained(OB,OC)) :-
     containerWithLid(OC),
-    infer(holds(TNEXT,effective(OC))).
+    infer(holds(T,effective(OC))),
+    notOccurs(T,TNEXT,unsealToAnything(OC)).
 
 persists(T,TNEXT,directContained(OB,OC)) :-
     occurs(T,TNEXT,load(_,_));
@@ -30,7 +31,7 @@ persists(T,TNEXT,directContained(OB,OC)) :-
 persists(T,TNEXT,directContained(OB,OC)) :- % OC can be an open container or containerWithLid
     occurs(T,TNEXT,dump(OX)), % OX must be effective and outsideAt
     openContainer(OC),
-    checkNotContained(T,notContained(OC,OX)).
+    infer(holds(T,notContained(OC,OX))).
 
 % Note: OB.OC means directContained(OB,OC), OC..OX means contained(OC,OX), comma means two groups that don't have contain relationship
 % OC is a containerWithLid
@@ -50,24 +51,25 @@ persists(T,TNEXT,directContained(OB,OC)) :-
 persists(T,TNEXT,contained(OB,OC)) :-
     closedContainer(OC).
 
-persists(T,TNEXT,contained(OB,OC)) :-
-    containerWithLid(OC),
-    infer(holds(T,effective(OC))),
-    notOccurs(T,TNEXT,unsealToAnything(OC)).
+persists(T,TNEXT,contained(OB,OW)) :-
+    containerWithLid(OW),
+    components(OC,OL,OW),
+    infer(holds(T,effective(OW))),
+    notOccurs(T,TNEXT,unsealToAnything(OW)).
 
 persists(T,TNEXT,contained(OB,OC)) :-
     notOccurs(T,TNEXT,dumpAnything),
     notOccurs(T,TNEXT,unload(OX,_)), 
-    checkNotContained(T,notContained(OB,OX)).
+    infer(holds(T,notContained(OB,OX))).
 
 % NOTE: OB..OC means contained(OB,OC), OX.OC means directContained(OX,OC)
 % OB..OC..OX.OA: OX becomes outsideAt, but doesn't affect contained(OB,OC). contained(OB,OC) true 
 % OB..OX.OC: contained(OB,OC) false 
-% OX..OB..OC: cannot unload OX since it's not directContained in the outermost container 
 % OB..OC, OX.OA: contained(OB,OC) is true. 
 persists(T,TNEXT,contained(OB,OC)) :- 
-    occurs(T,TNEXT,unload(OX,_)), % unload OX from some container, OX will become outsideAt after the unload 
-    checkNotContained(T,notContained(OB,OX)).
+    occurs(T,TNEXT,unload(OX,OA)), % unload OX from some container, OX will become outsideAt after the unload 
+    OA \= OC,
+    infer(holds(T,notContained(OB,OX))).
 
 persists(T,TNEXT,contained(OB,OC)) :-
     occurs(T,TNEXT,load(_,_));
@@ -85,7 +87,7 @@ persists(T,TNEXT,contained(OB,OC)) :-
 persists(T,TNEXT,contained(OB,OC)) :- % OC can be open container or containerWithLid
     occurs(T,TNEXT,dump(OX)), % OX must be outsideAt, can be open or closed/withLid
     openContainer(OC), 
-    checkNotContained(T,notContained(OC,OX)).  
+    infer(holds(T,notContained(OC,OX))).  
 
 % NOTE: OB..OC means contained(OB,OC), OX.OC means directContained(OX,OC), comma means they don't have contained relationship
 % OC is containerWithLid
@@ -96,21 +98,6 @@ persists(T,TNEXT,contained(OB,OC)) :- % OC can be open container or containerWit
     containerWithLid(OC),
     infer(holds(T,effective(OC))). 
 
-% persists for notContained
-% holds(T,notContained(OB,OC))
-% ..OB.., ..OC..
-persists(T,TNEXT,notContained(OB,OC)) :-
-    holds(T,outsideAt(OB,L)), 
-    persists(T,TNEXT,outsideAt(OB,L)).
-
-persists(T,TNEXT,notContained(OB,OC)) :-
-    occurs(T,TNEXT,carry(_,_,_));
-    occurs(T,TNEXT,dump(_));
-    occurs(T,TNEXT,unload(_,_));
-    occurs(T,TNEXT,seal(_,_,_)).
-
-% persists(T,TNEXT,notContained(OB,OC)) :-
-%     occurs(T,TNEXT,load())
 
 % persists for effective 
 persists(T,TNEXT,effective(O)) :-
@@ -132,6 +119,7 @@ persists(T,TNEXT,effective(O)) :-
     notOccurs(T,TNEXT,sealWithAnything(O)),
     notOccurs(T,TNEXT,unsealToAnything(O)).
 
+
 % persists for ineffective 
 persists(T,TNEXT,ineffective(O)) :-
     occurs(T,TNEXT,load(_,_)); 
@@ -151,6 +139,7 @@ persists(T,TNEXT,ineffective(O)) :-
 persists(T,TNEXT,ineffective(O)) :-
     notOccurs(T,TNEXT,unsealToAnything(O)),
     notOccurs(T,TNEXT,seal(_,_,O)).
+
 
 % persists for outsideAt
 persists(T,TNEXT,outsideAt(O,L)) :-

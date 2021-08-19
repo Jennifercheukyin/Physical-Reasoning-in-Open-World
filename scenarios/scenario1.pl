@@ -9,14 +9,12 @@ block(oa).
 openContainer(oc).
 lid(ol). 
 containerWithLid(ow).
-fitsOn(ol,oc).
+components(oc,ol,ow).
 location(la).
 
 holds(t0,outsideAt(oa,la)).
 holds(t0,outsideAt(ol,la)).
 holds(t0,outsideAt(oc,la)).
-holds(t0,outsideAt(ow,la)).
-holds(t0,effective(oa)).
 holds(t0,effective(ol)).
 holds(t0,effective(oc)).
 holds(t0,ineffective(ow)).

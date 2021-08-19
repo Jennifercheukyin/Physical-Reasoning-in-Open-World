@@ -18,11 +18,7 @@ location(lb).
 holds(t0,directContained(oa,oc)).
 holds(t0,directContained(ob,ow)).
 holds(t0,outsideAt(oc,la)).
-holds(t0,outsideAt(od,la)).
-holds(t0,outsideAt(ol,la)).
 holds(t0,outsideAt(ow,la)).
-holds(t0,effective(oa)).
-holds(t0,effective(ob)).
 holds(t0,effective(oc)).
 holds(t0,ineffective(od)).
 holds(t0,ineffective(ol)).
@@ -39,6 +35,9 @@ closedContainer(xd).
 
 % ?- infer(holds(t3,directContained(ob,od))).  % should succeed. 
 % ?- infer(holds(t3,outsideAt(ob,la))).  % should fail.
-% ?- infer(holds(t3,directContained(ob,ow))).  % should fail.
+% ?- infer(holds(t3,directContained(ob,ow))).  % should fail. infer(holds(t3,directContained(ob,ow))) -> infer(holds(t2,directContained(ob,ow))) -> infer(holds(t1,directContained(ob,ow))).
+% ?- infer(holds(t3,ineffective(ow))). % should succeed
+% ?- infer(holds(t3,effective(od))). % should succeed 
+% ?- infer(holds(t3,effective(oa))). % should succeed 
 
 
