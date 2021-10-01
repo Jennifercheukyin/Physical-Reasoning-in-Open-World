@@ -2,6 +2,9 @@
 :- multifile(notOccurs/3).
 :- multifile(holds/2).
 
+% possible goal states: 
+% directContained, contained, notContained, outsideAt, effective, ineffective
+
 % load 
 condEffect(load(OB,OC),directContained(OB,OC),[]).
 condEffect(load(OB,OC),contained(OB,OC),[]).
@@ -30,11 +33,30 @@ condEffect(unseal(OW,OL,OC),ineffective(OW),[]).
 condEffect(carry(O,LFROM,LTO),outsideAt(O,LTO),[]).
 
 % dump
-condEffect(dump(OC), outsideAt(OA,L), [openContainer(OC),directContained(OA,OC)]).
-% condEffect(dump(OC),directContained(OA,OC),[directContained(OA,OC),closedContainer(OC)]).
-% condEffect(dump(OC),directContained(OA,OC),[directContained(OA,OC),containerWithLid(OC)]).
 % condEffect(dump(OC),contained(OA,OC),[contained(OA,OC),closedContainer(OC)]).
 % condEffect(dump(OC),contained(OA,OC),[contained(OA,OC),containerWithLid(OC)]).
 % condEffect(dump(OC),notContained(OA,OC),[contained(OA,OC),openContainer(OC)]).
 % condEffect(dump(OC),notContained(OA,OC),[notContained(OA,OC)]).
-% condEffect(dump(OC),outsideAt(OA,L),[...]). % for every container that contains OA, the container needs to be open
+
+condEffect(TA,T,dump(OC),outsideAt(OA,L)) :- 
+    checkContainersInBetweenAreOpen(TA,T,OA,OC). 
+
+checkContainersInBetweenAreOpen(TA,T,OA,OC) :- 
+    infer(holds(TA,directContained(OA,OC))),
+    openContainer(OC). 
+
+checkContainersInBetweenAreOpen(TA,T,OA,OC) :-
+    infer(holds(TA,directContained(OA,OB))), 
+    openContainer(OB),
+    checkContainersInBetweenAreOpen(TA,T,OB,OC).
+
+condEffect(TA,T,dump(OC),directContained(OA,OC)) :-
+    (closedContainer(OC); containerWithLid(OC)),
+    infer(holds(TA,directContained(OB,OC))), 
+    OA = OB.
+
+condEffect(TA,T,dump(OC),directContained(OA,OC)) :-
+    (closedContainer(OC); containerWithLid(OC)),
+    infer(holds(TA,directContained(OB,OC))), 
+    OA \= OB, 
+    checkContainersInBetweenAreOpen(TA,T,OA,OB). 
