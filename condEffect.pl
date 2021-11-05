@@ -33,30 +33,58 @@ condEffect(unseal(OW,OL,OC),ineffective(OW),[]).
 condEffect(carry(O,LFROM,LTO),outsideAt(O,LTO),[]).
 
 % dump
-% condEffect(dump(OC),contained(OA,OC),[contained(OA,OC),closedContainer(OC)]).
-% condEffect(dump(OC),contained(OA,OC),[contained(OA,OC),containerWithLid(OC)]).
-% condEffect(dump(OC),notContained(OA,OC),[contained(OA,OC),openContainer(OC)]).
-% condEffect(dump(OC),notContained(OA,OC),[notContained(OA,OC)]).
+% outsideAt 
+inferDumpEffect(TA,dump(OC),outsideAt(OA,L)) :- 
+    OA = OC; chainOfOpenContainersIncluding(TA,OA,OC). 
 
-condEffect(TA,T,dump(OC),outsideAt(OA,L)) :- 
-    checkContainersInBetweenAreOpen(TA,T,OA,OC). 
+% Check that there is a chain of open containers from OA up to and including OC.
+chainOfOpenContainersIncluding(TA,OA,OC) :- 
+    openContainer(OC), 
+    infer(holds(TA,effective(OC))), 
+    chainOfOpenContainersUntil(TA,OA,OC).
 
-checkContainersInBetweenAreOpen(TA,T,OA,OC) :- 
-    infer(holds(TA,directContained(OA,OC))),
-    openContainer(OC). 
-
-checkContainersInBetweenAreOpen(TA,T,OA,OC) :-
-    infer(holds(TA,directContained(OA,OB))), 
+% Check that there is a chain of open containers from OA up to but not including OC.
+% Base case: null chain
+chainOfOpenContainersUntil(T,OA,OC) :-
+    infer(holds(T,directContained(OA,OC))).
+    
+% Recursive case
+chainOfOpenContainersUntil(T,OA,OC) :-
+    infer(holds(T,directContained(OA,OB))),
+    OB \= OC,
     openContainer(OB),
-    checkContainersInBetweenAreOpen(TA,T,OB,OC).
+    infer(holds(T,effective(OB))),
+    chainOfOpenContainersUntil(T,OB,OC).
 
-condEffect(TA,T,dump(OC),directContained(OA,OC)) :-
-    (closedContainer(OC); containerWithLid(OC)),
-    infer(holds(TA,directContained(OB,OC))), 
-    OA = OB.
+% directContained 
+inferDumpEffect(TA,dump(OC),directContained(OA,OB)) :-
+    (OB = OC; infer(holds(TA,contained(OB,OC)))), 
+    workingClosedContainer(TA,OB),
+    chainOfOpenContainersUntil(TA,OA,OB).
 
-condEffect(TA,T,dump(OC),directContained(OA,OC)) :-
-    (closedContainer(OC); containerWithLid(OC)),
-    infer(holds(TA,directContained(OB,OC))), 
-    OA \= OB, 
-    checkContainersInBetweenAreOpen(TA,T,OA,OB). 
+% OB works as a closed container at time T if either it is a permanently closed
+% container or it is an effective lidded container at T
+workingClosedContainer(_,OB) :- closedContainer(OB).
+
+workingClosedContainer(T,OB) :-
+    containerWithLid(OB).
+    infer(T,effective(OB)).
+
+% contained 
+% (OA,OB) and OC belong to two clusters 
+inferDumpEffect(TA,dump(OC),contained(OA,OB)) :-
+    infer(holds(TA,notContained(OB,OC))), 
+    infer(holds(TA,contained(OA,OB))). 
+
+% (OA,OB,OC) is one cluster 
+inferDumpEffect(TA,dump(OC),contained(OA,OB)) :-
+    infer(holds(TA,contained(OB,OC))), 
+    workingClosedContainer(T,OB).
+
+% % notContained 
+% inferDumpEffect(TA,dump(OC),notContained(OA,OC)) :-
+%     infer(holds(TA,contained(OA,OC))),
+%     openContainer(OC). 
+
+% inferDumpEffect(TA,dump(OC),notContained(OA,OC)) :-
+%     infer(holds(TA,notContained(OA,OC))). 

@@ -14,9 +14,8 @@ infer(holds(TEND,GOAL)) :-
 
 % for dump 
 infer(holds(TEND,GOAL)) :-
-    occurs(TA,TEND,ACT),
-    ACT = dump(OX), 
-    condEffect(TA,T,ACT,GOAL).
+    occurs(TA,TEND,dump(OX)),
+    inferDumpEffect(TA,dump(OX),GOAL).
 
 infer(holds(TEND,GOAL)) :-
     earlier(TA,TEND),
