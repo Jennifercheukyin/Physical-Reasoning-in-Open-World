@@ -116,9 +116,12 @@ persists(T,TNEXT,effective(O)) :-
     OW \= O. 
 
 persists(T,TNEXT,effective(O)) :-
-    notOccurs(T,TNEXT,sealWithAnything(O)),
-    notOccurs(T,TNEXT,unsealToAnything(O)).
+    openContainer(O), 
+    notOccurs(T,TNEXT,sealWithAnything(O)).
 
+persists(T,TNEXT,effective(O)) :- 
+    containerWithLid(O), 
+    notOccurs(T,TNEXT,unsealToAnything(O)).
 
 % persists for ineffective 
 persists(T,TNEXT,ineffective(O)) :-

@@ -9,7 +9,7 @@ infer(holds(TEND,GOAL)) :-
 infer(holds(TEND,GOAL)) :-
     occurs(TA,TEND,ACT),
     ACT \= dump(OX),
-    condEffect(ACT,GOAL,QLIST).
+    condEffect(ACT,GOAL,QLIST),
     forall(member(Q,QLIST),infer(holds(TA,Q))).
 
 % for dump 
