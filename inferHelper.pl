@@ -16,27 +16,30 @@ notOccurs(TA,TB,E) :-
     earlier(TB,TY),
     notOccurs(TX,TY,E). 
 
-notOccurs(TA,TB,carrySomewhere(_)) :- 
-    notOccurs(TX,TY,carrySomethingSomewhere).
+notOccurs(TA,TB,carrySomewhere(O)) :- 
+    notOccurs(TX,TY,carry(O,_,_)).
 
 notOccurs(TA,TB,loadIntoSomething(_)) :- 
     notOccurs(TX,TY,load).
 
-holds(T,notContained(OB,OC)) :-
-    OB \= OC,
-    infer(holds(T,outsideAt(OB,_))).
+notOccurs(TA,TB,unsealToAnything(OW)) :-
+    notOccurs(TX,TY,unseal(OW,_,_)).
 
-holds(T,notContained(OB,OC)) :-
-    infer(holds(T,directContained(OB,OM))), 
-    OM \= OC,
-    infer(holds(T,notContained(OM,OC))).
+% holds(T,notContained(OB,OC)) :-
+%     OB \= OC,
+%     infer(holds(T,outsideAt(OB,_))).
 
-holds(T,contained(OA,OC)) :- 
-    infer(holds(T,directContained(OA,OC))). 
+% holds(T,notContained(OB,OC)) :-
+%     infer(holds(T,directContained(OB,OM))), 
+%     OM \= OC,
+%     infer(holds(T,notContained(OM,OC))).
 
-holds(T,contained(OA,OC)) :-
-    infer(holds(T,directContained(OA,OB))),
-    infer(holds(T,contained(OB,OC))).
+% holds(T,contained(OA,OC)) :- 
+%     infer(holds(T,directContained(OA,OC))). 
+
+% holds(T,contained(OA,OC)) :-
+%     infer(holds(T,directContained(OA,OB))),
+%     infer(holds(T,contained(OB,OC))).
 
 holds(_,effective(O)) :- 
     block(O);

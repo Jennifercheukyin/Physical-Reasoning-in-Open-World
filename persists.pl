@@ -43,7 +43,7 @@ persists(T,TNEXT,directContained(OB,OC)) :- % OC can be an open container or con
     infer(holds(T,effective(OC))).
 
 persists(T,TNEXT,directContained(OB,OC)) :-
-    notOccurs(T,TNEXT,dumpAnything),
+    notOccurs(T,TNEXT,dump(OC)),
     notOccurs(T,TNEXT,unload(OB,OC)).
 
 
@@ -140,8 +140,12 @@ persists(T,TNEXT,ineffective(O)) :-
     OL \= O. 
 
 persists(T,TNEXT,ineffective(O)) :-
-    notOccurs(T,TNEXT,unsealToAnything(O)),
-    notOccurs(T,TNEXT,seal(_,_,O)).
+    containerWithLid(O), 
+    notOccurs(T,TNEXT,seal(,_,O)).
+
+persists(T,TNEXT,ineffective(O)) :-
+    openContainer(O),
+    notOccurs(T,TNEXT,unseal(_,_,O)). 
 
 
 % persists for outsideAt
